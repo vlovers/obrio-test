@@ -21,14 +21,15 @@ const useStyles = makeStyles({
 	}
 });
 
-export const Resident = () => {
+export const Resident = ({item}) => {
+	let {name, height, mass, gender} = {...item}
     const classes = useStyles();
     return (
         <div className={classes.planetItem}>
-			<Typography className={classes.planetName}>Имя: Oleg</Typography>
-			<Typography className={classes.planetClimate}>Рост: 1.44м</Typography>
-			<Typography className={classes.planetPopulation}>Вес: 80kg</Typography>
-			<Typography className={classes.planetPopulation}>Пол: male</Typography>
+			<Typography className={classes.planetName}>Имя: {name}</Typography>
+			<Typography className={classes.planetClimate}>Рост: {height}</Typography>
+			<Typography className={classes.planetPopulation}>Вес: {mass}</Typography>
+			<Typography className={classes.planetPopulation}>Пол: {gender}</Typography>
         </div>
     )
 }
