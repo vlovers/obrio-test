@@ -1,58 +1,68 @@
-import axios from 'axios';
 import React from 'react';
-import './App.css';
 import {connect} from 'react-redux';
-
-import { PlanetItems } from './components/PlanetItems';
-import { PlanetInfo } from './components/PlanetInfo';
-import { Resident } from './components/Resident';
-import { useHistory } from "react-router-dom";
-import {
-    BrowserRouter as Router,
-    Route,
-  } from "react-router-dom";
+import { makeStyles } from '@material-ui/core/styles';
+import { PlanetInfo, Header, PlanetItems, Resident } from './components';
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import { planetsActions, peopleActions } from './redux/actions';
-import { Header } from './components/Header';
-import createHistory from 'history/createBrowserHistory';
 
-function App({planets, fetchPlanets, fetchSelectPlanet, selectPlanet, planetsCount, setPeople, people}) {
-    const history = createHistory();   
+const useStyles = makeStyles({
+    catalogWrapper: {
+        width: "100%",
+        height: "100%",
+        minHeight: "100vh",
+        paddingBottom: 50,
+        boxSizing: "border-box",
+        background: "url(https://cdn.wallpapersafari.com/1/97/co341S.jpg)"
+    }
+});
 
-    console.log(history);
-    
+function App({planets, fetchPlanets, fetchSelectPlanet, selectPlanet, planetsCount, planetsPage, setPeople, people, nextPageErr}) {
+    const classes = useStyles();
+
     React.useEffect(() => {
         fetchPlanets()
     }, [])
 
-    const selectItem = (url) => {
+    //Выбрана планета
+    const onSelectItem = (url) => {
         fetchSelectPlanet(url)
-        // history.push("/planet/1");
-
-    }
-
-    const selectPeople = (data) => {
-
-        setPeople(data)
-        // history.push("/planet/1");
         
     }
-
+    //Выбран человек
+    const onSelectPeople = (data) => {
+        setPeople(data)
+    }
+    //Загрузка новых планет   
     const onLoadMore = () => {
         fetchPlanets()
     }
   
     return (
-    <div className="App">
+    <div className={classes.catalogWrapper}>
         <Router>
         <Route path="/">
-            <Header count={planetsCount}/>
+            <Header page={planetsPage} count={planetsCount}/>
         </Route>
-        <Route path="/planets">
-            <PlanetItems onLoadMore={onLoadMore} selectItem={selectItem} planets={planets && planets}/>
+        <Route exact path={["/planets", "/"]}>
+            <PlanetItems 
+                nextPageErr={nextPageErr}
+                onLoadMore={onLoadMore} 
+                selectItem={onSelectItem} 
+                planets={planets && planets}/>
         </Route>
 
         <Route path={`/planet`}>
-            <PlanetInfo selectPeople={selectPeople} item={selectPlanet}/>
+            <PlanetInfo 
+                name={selectPlanet.name} 
+                rotation_period={selectPlanet.rotation_period}
+                diameter={selectPlanet.diameter}
+                climate={selectPlanet.climate}
+                gravity={selectPlanet.gravity}
+                terrain={selectPlanet.terrain}
+                population={selectPlanet.population}
+                residents={selectPlanet.residents}
+                selectPeople={onSelectPeople} 
+                item={selectPlanet}/>
         </Route>
             
         <Route path="/people">
@@ -69,7 +79,9 @@ export default connect(
         planets: planets.items,
         selectPlanet: planets.selectPlanet,
         people: people.selectPeople,
-        planetsCount: planets.planetsCount
+        planetsPage: planets.planetsPage,
+        planetsCount: planets.planetsCount,
+        nextPageErr: planets.nextPageErr
 
     }),
     {...planetsActions, ...peopleActions}

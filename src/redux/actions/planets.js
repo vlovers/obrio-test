@@ -1,22 +1,35 @@
 import { planetsApi, peoplesApi } from "../../utils/api";
 
 const planetsActions = {
-    setPlanets: (items) => ({
+    //Передача планет в стор
+    setPlanets: (items, nextPageErr) => ({
         type: "PLANETS:SET_ITEMS",
-        payload: items
+        payload: {
+            items: items,
+            nextPageErr: nextPageErr
+        }
     }),
+
+    
+    //Получение планет
     fetchPlanets: () => (dispatch, getState) => {
         const { planets } = getState();
         planetsApi
-            .getPlanets(planets.planetsPage)
+            .getPlanets(planets.planetsPage + 1)
             .then(({ data }) => {
-                dispatch(planetsActions.setPlanets(data.results));
+                dispatch(planetsActions.setPlanets(data.results, false));
+            }).catch(() => {
+                dispatch(planetsActions.setPlanets(null, true));
+                
             })
+        return "err"
     },
+    //Выбраная планета
     setSelectPlanet: (item) => ({
         type: "PLANETS:SELECT_ITEM",
         payload: item
     }),
+    //Получение выбранной планеты вместе с известными жителями
     fetchSelectPlanet: (url) => dispatch => {
         
         planetsApi
@@ -24,25 +37,29 @@ const planetsActions = {
             .then(( planet ) => {
                 let postResidents = []
                 
-                planet.data.residents.map((resident, index) => {
-                    peoplesApi
-                        .getPeoplesByUrl(resident)
-                        .then((resident) => {
-                            console.log(planet.data.residents.length , postResidents.length + 1);
-                            
-                            
-                            if(planet.data.residents.length === postResidents.length + 1 ){
-                                const postData = Object.assign(planet.data, { residents: [...postResidents] });
-                                console.log(postData);
-                                dispatch(planetsActions.setSelectPlanet(postData));
+                if(planet.data.residents.length > 0) {
+                    planet.data.residents.map((resident) => {
+                        peoplesApi
+                            .getPeoplesByUrl(resident)
+                            .then((resident) => {
 
-                            } else {
-                                postResidents = [...postResidents, resident.data]
-                                console.log(postResidents);
+                                if(planet.data.residents.length === postResidents.length + 1){
 
-                            }
-                        })
-                })
+                                    postResidents = [...postResidents, resident.data]
+                                    
+                                    const postData = Object.assign(planet.data, { residents: [...postResidents] });
+                                    dispatch(planetsActions.setSelectPlanet(postData));
+
+                                } else {
+                                    postResidents = [...postResidents, resident.data]
+
+                                }
+
+                            })
+                    })
+                } else {
+                    dispatch(planetsActions.setSelectPlanet(planet.data));
+                }
             })
     },
 };

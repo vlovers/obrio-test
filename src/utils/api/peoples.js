@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const peoples = {
-    getPeoplesByUrl: (url: string) => axios.get(url),
+    getPeoplesByUrl: (url) => axios.get(url),
 
 };
 

@@ -1,8 +1,9 @@
 const initialState ={
     items: [],
     selectPlanet: [],
-    planetsPage: 1,
-    planetsCount: 0
+    planetsPage: 0,
+    planetsCount: 0,
+    nextPageErr: false
 }
 
 const planets = (state = initialState, {type, payload}) => {
@@ -11,9 +12,11 @@ const planets = (state = initialState, {type, payload}) => {
         case "PLANETS:SET_ITEMS": 
             return {
                 ...state,
-                items: [...state.items, ...payload],
-                planetsPage: state.planetsPage + 1,
-                planetsCount: state.planetsCount + payload.length
+                items: payload.items ? [...state.items, ...payload.items] : [...state.items],
+                planetsPage: !payload.nextPageErr ? state.planetsPage + 1 : state.planetsPage,
+                planetsCount: payload.items ? (state.planetsCount + payload.items.length) : state.planetsCount,
+                nextPageErr: payload.nextPageErr
+
             };
         case "PLANETS:SELECT_ITEM": 
             return {
